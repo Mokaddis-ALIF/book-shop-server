@@ -6,13 +6,14 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 require('dotenv').config();
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 //Middleware
 app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.fmqfn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+
 const client = new MongoClient(uri, {
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
@@ -24,6 +25,14 @@ async function run() {
 		await client.connect();
 		const database = client.db('bookShop');
 		const ordersCollection = database.collection('orders');
+		const productsCollection = database.collection('products');
+
+		//GET products api
+		app.get('/products', async (req, res) => {
+			const cursor = productsCollection.find({});
+			const products = await cursor.toArray();
+			res.send(products);
+		});
 
 		//GET api
 		app.get('/orders', async (req, res) => {
@@ -33,12 +42,12 @@ async function run() {
 		});
 
 		//Get single service
-		app.get('/orders/:id', async (req, res) => {
-			const id = req.params.id;
-			const query = { _id: ObjectId(id) };
-			const order = await ordersCollection.findOne(query);
-			res.json(order);
-		});
+		// app.get('/orders/:id', async (req, res) => {
+		// 	const id = req.params.id;
+		// 	const query = { _id: ObjectId(id) };
+		// 	const order = await ordersCollection.findOne(query);
+		// 	res.json(order);
+		// });
 
 		//POST api
 		app.post('/orders', async (req, res) => {
